@@ -1,23 +1,7 @@
-﻿$ErrorActionPreference = 'Stop';
+$ErrorActionPreference = 'Stop';
 $pp = Get-PackageParameters
-if (!$pp['HyperVisor']) { $pp['HyperVisor'] = "Hyper-V" }
-$winversion = Get-WmiObject Win32_OperatingSystem | Select-Object Caption, Version, BuildNumber
-if ($pp['HyperVisor'] -match 'Hyper-*V') {
-  if (((($winversion.Caption) -match '.*10.*Pro.*') -or (($winversion.Caption) -match '.*10.*Enterprise.*') -or (($winversion.Caption) -match '.*10.*Корпоративная.*')) -and ($winversion.BuildNumber -gt 17134)) {
-    if ((Get-WindowsOptionalFeature -Online -FeatureName IIS-WebServer).State -eq "Disabled") {
-      Write-Output "Installing Hyper-V"
-      Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
-    }
-  }
-  else {
-    throw "Hyper-V requires Windows 10 Pro/Enterprise with a build version > 17134"
-  }
-}
-elseif (!$pp['HyperVisor'] -match 'Virtual\s*Box') {
-  throw "$($pp['HyperVisor']) is not a valid HyperVisor for this machine."
-}
 
-$args = @{ 
+$packageArgs = @{ 
   PackageName = $env:ChocolateyPackageName
   FileType = 'exe'
   SilentArgs = '/S'
@@ -26,7 +10,7 @@ $args = @{
   ChecksumType64 = 'sha512'
 }
 
-Install-ChocolateyPackage  @args
+Install-ChocolateyPackage  @packageArgs
   
 
 Install-BinFile `
